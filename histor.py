@@ -19,6 +19,8 @@ parser.add_option("-M", "--memory",
 sizeHisto = {}
 
 def bucketize(size):
+   if(size <= 0):
+      return 0
    return floor(log(size, 2))
 
 def process(filename):
