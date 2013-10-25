@@ -61,9 +61,24 @@ def main():
    datadir = rest[0]
    for cfile in listdir(datadir):
        srcfile = join(datadir, cfile)
-       m = re.search("\d+\.couch", cfile)
+       m = re.search("(\d+)\.couch\.(\d+)", cfile)
        if m:
-          process(srcfile)
+          tries = 0
+          processed = False
+          while not processed:
+             try:
+                process(srcfile)
+                processed = True
+             except OSError as e:
+                if tries > 5:
+                   processed = True
+                   print >> stderr, "Tried VB", m.group(1), "over 5 times, couldn't open."
+                else:
+                   print >> stderr, "VB file", m.group(1), "moved, retrying"
+                   tries += 1
+                   cfile = m.group(1) + ".couch." + str(int(m.group(2)) + tries)
+                   srcfile = join(datadir, cfile)
+
    histo = [(k,v) for k,v in sizeHisto.iteritems()]
    histo.sort(key=lambda tup: tup[0])
    for bucket, count in sizeHisto.iteritems():

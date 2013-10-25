@@ -26,16 +26,29 @@ def process(filename):
     store.close()
 
 def main():
-   print >> stderr, "Listing items >=", args.threshold, "bytes"
    if len(rest) is not 1:
       parser.print_usage()
       exit(2)
    datadir = rest[0]
    for cfile in listdir(datadir):
        srcfile = join(datadir, cfile)
-       m = re.search("\d+\.couch", cfile)
+       m = re.search("(\d+)\.couch\.(\d+)", cfile)
        if m:
-          process(srcfile)
+          tries = 0
+          processed = False
+          while not processed:
+             try:
+                process(srcfile)
+                processed = True
+             except OSError as e:
+                if tries > 5:
+                   processed = True
+                   print >> stderr, "Tried VB", m.group(1), "over 5 times, couldn't open."
+                else:
+                   print >> stderr, "VB file", m.group(1), "moved, retrying"
+                   tries += 1
+                   cfile = m.group(1) + ".couch." + str(int(m.group(2)) + tries)
+                   srcfile = join(datadir, cfile)
 
 if __name__ == '__main__':
     main()
