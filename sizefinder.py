@@ -17,10 +17,13 @@ def process(filename):
     store = CouchStore(filename, 'r')
     for doc_info in store.changesSince(0):
         size = 0
-        if args.memory:
+        if doc_info.deleted:
+            size = 0
+        elif args.memory:
             size = len(doc_info.getContents(options = CouchStore.DECOMPRESS))
         else:
             size = doc_info.physSize
+
         if size >= args.threshold:
             print doc_info.id
     store.close()

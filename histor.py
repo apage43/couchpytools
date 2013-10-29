@@ -27,9 +27,11 @@ def process(filename):
     store = CouchStore(filename, 'r')
     for doc_info in store.changesSince(0):
         size = 0
-        if args.memory:
+        if doc_info.deleted:
+            size = 0
+        elif args.memory:
             size = len(doc_info.getContents(options = CouchStore.DECOMPRESS))
-        if not args.memory:
+        else:
             size = doc_info.physSize
 
         if bucketize(size) not in sizeHisto:
